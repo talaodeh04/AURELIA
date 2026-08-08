@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURELIA — The Private Vault for Rare Jewelry &amp; Timepieces</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gold: { 50: '#FBF6E9', 100: '#F5E9C8', 200: '#EAD08D', 300: '#DFB859', 400: '#D4AF37', 500: '#B8952B', 600: '#96771F', 700: '#755C18', 800: '#544213', 900: '#33280B' },
+                        azure: { 50: '#EAF6FF', 100: '#CFEBFF', 200: '#9BD6FF', 300: '#63BFFF', 400: '#33A8FF', 500: '#1C8CE0', 600: '#136BB3', 700: '#0F5589', 800: '#0C4269', 900: '#082D49' }
+                    },
+                    fontFamily: {
+                        display: ['"Cormorant Garamond"', 'serif'],
+                        body: ['Inter', 'sans-serif'],
+                        mono: ['Inter', 'sans-serif']
+                    },
+                    boxShadow: {
+                        glow: '0 20px 45px -15px rgba(212, 175, 55, 0.35)',
+                        card: '0 1px 0 0 rgba(255,255,255,0.04) inset, 0 20px 40px -20px rgba(0,0,0,0.4)'
+                    },
+                    keyframes: {
+                        floaty: { '0%,100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-16px)' } },
+                        shimmer: { '0%': { backgroundPosition: '-200% 0' }, '100%': { backgroundPosition: '200% 0' } }
+                    },
+                    animation: {
+                        floaty: 'floaty 8s ease-in-out infinite',
+                        shimmer: 'shimmer 3.5s ease-in-out infinite'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(212, 175, 55, 0.4) transparent;
+        }
+
+        *::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        *::-webkit-scrollbar-thumb {
+            background: rgba(212, 175, 55, 0.35);
+            border-radius: 999px;
+        }
+
+        *::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass {
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+
+        .vignette {
+            background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(212, 175, 55, 0.10), transparent 60%);
+        }
+
+        .dark .vignette {
+            background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(212, 175, 55, 0.08), transparent 60%);
+        }
+
+        .hairline {
+            background-image: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.5), transparent);
+            height: 1px;
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(28px);
+            transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .reveal.in-view {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .row-enter {
+            animation: rowEnter 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        @keyframes rowEnter {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-enter {
+            animation: modalEnter 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        @keyframes modalEnter {
+            from {
+                opacity: 0;
+                transform: scale(0.94) translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .toast-enter {
+            animation: toastEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        @keyframes toastEnter {
+            from {
+                opacity: 0;
+                transform: translateX(120%);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .gradient-text {
+            background: linear-gradient(100deg, #D4AF37 0%, #EAD08D 50%, #B8952B 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .shimmer-text {
+            background: linear-gradient(90deg, #D4AF37 0%, #F5E9C8 20%, #D4AF37 40%, #D4AF37 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: shimmer 3.5s ease-in-out infinite;
+        }
+
+        .gem-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .gem-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(115deg, transparent 40%, rgba(212, 175, 55, 0.12) 50%, transparent 60%);
+            background-size: 250% 250%;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+
+        .gem-card:hover::after {
+            opacity: 1;
+            animation: shimmer 1.6s ease-in-out;
+        }
+
+        tbody tr {
+            transition: background-color 0.2s ease;
+        }
+
+        .nav-link.active {
+            color: #B8952B;
+        }
+
+        .dark .nav-link.active {
+            color: #D4AF37;
+        }
+
+        .log-item {
+            border-inline-start: 2px solid;
+        }
+
+        input[type=number]::-webkit-inner-spin-button {
+            opacity: 1;
+        }
+
+        #qr-canvas-wrap img,
+        #qr-canvas-wrap canvas {
+            margin: 0 auto;
+            border-radius: 12px;
+        }
+
+        .font-display {
+            letter-spacing: 0.01em;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-zinc-50 dark:bg-[#0B1220] text-zinc-800 dark:text-zinc-200 font-body transition-colors duration-500 min-h-screen overflow-x-hidden">
+
+    <div class="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+        <div class="vignette absolute inset-0"></div>
+        <div
+            class="absolute -top-40 -left-40 w-[34rem] h-[34rem] bg-gold-400/10 dark:bg-gold-500/[0.06] rounded-full blur-3xl animate-floaty">
+        </div>
+        <div class="absolute top-1/4 -right-40 w-[30rem] h-[30rem] bg-azure-400/[0.06] dark:bg-azure-600/[0.04] rounded-full blur-3xl animate-floaty"
+            style="animation-delay:-3s"></div>
+    </div>
+
+    <nav id="navbar"
+        class="fixed top-0 inset-x-0 z-40 glass bg-white/70 dark:bg-[#0B1220]/70 border-b border-zinc-200/60 dark:border-zinc-800/60">
+        <div class="max-w-7xl mx-auto px-5 sm:px-8 py-3.5 flex items-center justify-between gap-4">
+            <a href="#home" class="flex items-center gap-2.5">
+                <img src="logo.png" alt="AURELIA" class="w-9 h-9 flex-shrink-0 rounded-lg">
+                <span class="font-display font-bold text-lg tracking-tight">AURELIA</span>
+            </a>
+
+            <div class="hidden lg:flex items-center gap-7 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                <a href="#home"
+                    class="nav-link hover:text-zinc-900 dark:hover:text-white transition-colors">Overview</a>
+                <a href="#operations" class="nav-link hover:text-zinc-900 dark:hover:text-white transition-colors">The
+                    Vault</a>
+                <a href="#analytics"
+                    class="nav-link hover:text-zinc-900 dark:hover:text-white transition-colors">Appraisals</a>
+                <a href="#activity"
+                    class="nav-link hover:text-zinc-900 dark:hover:text-white transition-colors">Provenance</a>
+                <a href="#notes" class="nav-link hover:text-zinc-900 dark:hover:text-white transition-colors">Notes</a>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <div class="hidden md:flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-gold-400/30">
+                    <i class="fa-regular fa-clock text-gold-500 text-xs"></i>
+                    <span id="live-clock"
+                        class="text-xs text-zinc-500 dark:text-gold-300/90 tracking-widest">00:00:00</span>
+                </div>
+                <button id="theme-toggle"
+                    class="w-9 h-9 rounded-full border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:border-gold-400 transition-colors flex items-center justify-center group">
+                    <i id="theme-icon"
+                        class="fa-solid fa-moon text-sm text-zinc-500 group-hover:text-gold-500 transition-colors"></i>
+                </button>
+                <a href="#operations"
+                    class="hidden lg:flex items-center gap-2 h-9 px-5 rounded-full bg-zinc-900 dark:bg-gold-400 text-white dark:text-zinc-900 text-sm font-medium tracking-wide hover:shadow-glow transition-shadow">
+                    Enter the Vault
+                </a>
+                <button id="mobile-menu-toggle"
+                    class="lg:hidden w-9 h-9 rounded-full border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:border-gold-400 transition-colors flex items-center justify-center">
+                    <i id="mobile-menu-icon" class="fa-solid fa-bars text-sm text-zinc-500"></i>
+                </button>
+            </div>
+        </div>
+        <div id="mobile-menu"
+            class="hidden lg:hidden glass bg-white/95 dark:bg-[#0B1220]/95 border-t border-zinc-200/60 dark:border-zinc-800/60 px-5 py-4 space-y-1">
+            <a href="#home"
+                class="nav-link block px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors">Overview</a>
+            <a href="#operations"
+                class="nav-link block px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors">The
+                Vault</a>
+            <a href="#analytics"
+                class="nav-link block px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors">Appraisals</a>
+            <a href="#activity"
+                class="nav-link block px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors">Provenance</a>
+            <a href="#notes"
+                class="nav-link block px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors">Notes</a>
+            <a href="#operations"
+                class="flex items-center justify-center gap-2 h-11 mt-2 rounded-full bg-zinc-900 dark:bg-gold-400 text-white dark:text-zinc-900 text-sm font-medium tracking-wide">
+                Enter the Vault
+            </a>
+        </div>
+    </nav>
+
+    <header id="home" class="relative pt-40 pb-24 px-5 sm:px-8 overflow-hidden">
+        <div class="max-w-7xl mx-auto">
+            <div class="reveal text-center max-w-3xl mx-auto mb-14">
+                <div class="inline-flex items-center gap-2.5 px-5 py-1.5 rounded-full border border-gold-400/40 mb-8">
+                    <i class="fa-solid fa-gem text-gold-500 text-[10px]"></i>
+                    <span class="text-[11px] uppercase tracking-[0.2em] text-gold-700 dark:text-gold-300">Est. 2026 ·
+                        Private Collection</span>
+                </div>
+                <h1
+                    class="font-display font-semibold text-5xl sm:text-6xl lg:text-7xl leading-[1.05] tracking-tight mb-7 italic">
+                    Every Piece,<br><span class="gradient-text not-italic">Beautifully Kept.</span>
+                </h1>
+                <p class="text-zinc-500 dark:text-zinc-400 text-lg leading-relaxed max-w-xl mx-auto mb-10 font-light">
+                    AURELIA is a private vault for rare jewelry and timepieces — valuation, provenance, and certificates
+                    of authenticity, curated and kept safe on your own device.
+                </p>
+                <div class="flex flex-wrap items-center justify-center gap-4">
+                    <a href="#operations"
+                        class="flex items-center gap-2.5 h-12 px-7 rounded-full bg-zinc-900 dark:bg-gold-400 text-white dark:text-zinc-900 font-medium tracking-wide hover:shadow-glow transition-shadow">
+                        <i class="fa-solid fa-gem text-xs"></i> Enter the Vault
+                    </a>
+                    <a href="#collection"
+                        class="flex items-center gap-2.5 h-12 px-7 rounded-full border border-gold-400/40 font-medium tracking-wide hover:border-gold-400 hover:bg-gold-50/50 dark:hover:bg-gold-500/5 transition-colors">
+                        View the Collection
+                    </a>
+                </div>
+            </div>
+
+            <div class="reveal rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/60 glass shadow-2xl p-6 sm:p-8"
+                style="transition-delay:120ms">
+                <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+                    <div class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-gem text-gold-500 text-xs"></i>
+                        <span class="font-display italic text-sm text-zinc-500 dark:text-zinc-400">Vault Overview</span>
+                    </div>
+                    <span id="hero-date" class="text-[11px] text-zinc-400 tracking-wide"></span>
+                </div>
+                <div class="hairline mb-6"></div>
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="rounded-xl bg-gold-50 dark:bg-gold-500/10 p-4">
+                        <p class="text-[10px] font-mono uppercase text-gold-700 dark:text-gold-400 mb-1">Pieces in Vault
+                        </p>
+                        <p id="hero-total" class="font-display font-bold text-3xl" data-value="0">0</p>
+                    </div>
+                    <div class="rounded-xl bg-azure-50 dark:bg-azure-500/10 p-4">
+                        <p class="text-[10px] font-mono uppercase text-azure-700 dark:text-azure-400 mb-1">Total
+                            Valuation</p>
+                        <p id="hero-value" class="font-display font-bold text-3xl">$0</p>
+                    </div>
+                    <div class="rounded-xl bg-rose-50 dark:bg-rose-500/10 p-4">
+                        <p class="text-[10px] font-mono uppercase text-rose-600 dark:text-rose-400 mb-1">Limited Stock
+                        </p>
+                        <p id="hero-low" class="font-display font-bold text-3xl" data-value="0">0</p>
+                    </div>
+                    <div class="rounded-xl bg-zinc-100 dark:bg-zinc-800 p-4">
+                        <p class="text-[10px] font-mono uppercase text-zinc-500 dark:text-zinc-400 mb-1">Categories</p>
+                        <p id="hero-categories" class="font-display font-bold text-3xl" data-value="0">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="relative py-20 px-5 sm:px-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="reveal text-center max-w-2xl mx-auto mb-14">
+                <span class="text-xs font-mono uppercase tracking-widest text-gold-600 dark:text-gold-400">Inside the
+                    Vault</span>
+                <h2 class="font-display font-bold text-3xl sm:text-4xl mt-3 mb-4">Four chambers, one vault</h2>
+                <p class="text-zinc-500 dark:text-zinc-400">Every chamber below feeds the same living collection —
+                    nothing is disconnected.</p>
+            </div>
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                <a href="#operations"
+                    class="reveal gem-card p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 hover:border-gold-400/60 hover:-translate-y-1.5 transition-all duration-300 shadow-card block">
+                    <div
+                        class="w-12 h-12 rounded-full bg-gold-100 dark:bg-gold-500/10 flex items-center justify-center text-gold-600 dark:text-gold-400 mb-4">
+                        <i class="fa-solid fa-vault text-lg"></i>
+                    </div>
+                    <h3 class="font-display font-semibold text-lg mb-1.5">The Vault</h3>
+                    <p class="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">Register, update, and catalogue
+                        every piece in your collection.</p>
+                </a>
+                <a href="#analytics"
+                    class="reveal gem-card p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 hover:border-gold-400/60 hover:-translate-y-1.5 transition-all duration-300 shadow-card block"
+                    style="transition-delay:80ms">
+                    <div
+                        class="w-12 h-12 rounded-full bg-azure-100 dark:bg-azure-500/10 flex items-center justify-center text-azure-600 dark:text-azure-400 mb-4">
+                        <i class="fa-solid fa-chart-pie text-lg"></i>
+                    </div>
+                    <h3 class="font-display font-semibold text-lg mb-1.5">Appraisal Insights</h3>
+                    <p class="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">Live valuation charts by
+                        category and top pieces.</p>
+                </a>
+                <a href="#activity"
+                    class="reveal gem-card p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 hover:border-gold-400/60 hover:-translate-y-1.5 transition-all duration-300 shadow-card block"
+                    style="transition-delay:160ms">
+                    <div
+                        class="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-500/10 flex items-center justify-center text-rose-500 mb-4">
+                        <i class="fa-solid fa-scroll text-lg"></i>
+                    </div>
+                    <h3 class="font-display font-semibold text-lg mb-1.5">Provenance Log</h3>
+                    <p class="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">Every acquisition and change
+                        tracked, with one-tap restoration.</p>
+                </a>
+                <a href="#notes"
+                    class="reveal gem-card p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 hover:border-gold-400/60 hover:-translate-y-1.5 transition-all duration-300 shadow-card block"
+                    style="transition-delay:240ms">
+                    <div
+                        class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center text-blue-500 mb-4">
+                        <i class="fa-solid fa-feather text-lg"></i>
+                    </div>
+                    <h3 class="font-display font-semibold text-lg mb-1.5">Curator Notes</h3>
+                    <p class="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">Private notes pinned locally to
+                        your collection.</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section id="operations" class="relative py-20 px-5 sm:px-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="reveal text-center max-w-2xl mx-auto mb-12">
+                <span class="text-xs font-mono uppercase tracking-widest text-gold-600 dark:text-gold-400">Chamber
+                    I</span>
+                <h2 class="font-display font-bold text-3xl sm:text-4xl mt-3 mb-4">The Vault</h2>
+                <p class="text-zinc-500 dark:text-zinc-400">Register and manage every piece — price, taxes, ads,
+                    discount, and stock.</p>
+            </div>
+
+            <div id="form-card"
+                class="reveal rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-card overflow-hidden mb-8">
+                <div
+                    class="px-6 py-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between flex-wrap gap-3">
+                    <div class="flex items-center gap-2.5">
+                        <div
+                            class="w-8 h-8 rounded-lg bg-gold-100 dark:bg-gold-500/10 flex items-center justify-center text-gold-600 dark:text-gold-400">
+                            <i id="form-icon" class="fa-solid fa-plus text-sm"></i>
+                        </div>
+                        <h3 id="form-title" class="font-display font-bold text-lg">Register New Piece</h3>
+                    </div>
+                    <span
+                        class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-rose-100 dark:bg-rose-500/10 text-rose-500 text-sm font-mono font-bold">
+                        Total: <span id="live-total">$0.00</span>
+                    </span>
+                </div>
+                <form id="product-form" class="p-6 space-y-4">
+                    <input type="hidden" id="product-id">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="sm:col-span-2 lg:col-span-4">
+                            <label
+                                class="block text-xs font-semibold uppercase tracking-wide text-zinc-500 mb-1.5">Piece
+                                Name</label>
+                            <input id="field-title" required type="text" placeholder="e.g. Cartier Love Bracelet"
+                                class="w-full h-11 px-3.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 focus:outline-none focus:ring-2 focus:ring-gold-400/60 text-sm">
+                        </div>
+                        <div>
+                            <label
+                                class="block text-xs font-semibold uppercase tracking-wide text-zinc-500 mb-1.5">Price
+                                ($)</label>
+                            <input id="field-price" required type="number" min="0" step="0.01" placeholder="0.00"
+                                class="calc-field w-full h-11 px-3.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 focus:outline-none focus:ring-2 focus:ring-gold-400/60 text-sm font-mono">
+                        </div>
+                        <div>
+                            <label
+                                class="block text-xs font-semibold uppercase tracking-wide text-zinc-500 mb-1.5">Taxes
+                                ($)</label>
+                            <input id="field-taxes" type="number" min="0" step="0.01" placeholder="0.00"
+                                class="calc-field w-full h-11 px-3.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 focus:outline-none focus:ring-2 focus:ring-gold-400/60 text-sm font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-zinc-500 mb-1.5">Ads
+                                ($)</label>
+                            <input id="field-ads" type="number" min="0" step="0.01" placeholder="0.00"
+                                class="calc-field w-full h-11 px-3.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 focus:outline-none focus:ring-2 focus:ring-gold-400/60 text-sm font-mono">
+                        </div>
+                        <div>
+                            <label
+                                class="block text-xs font-semibold uppercase tracking-wide text-zinc-500 mb-1.5">Discount
+                                ($)</label>
+                            <input id="field-discount" type="number" min="0" step="0.01" placeholder="0.00"
+                                class="calc-field w-full h-11 px-3.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 focus:outline-none focus:ring-2 focus:ring-gold-400/60 text-sm font-mono">
+                        </div>
+                        <div>
+                            <label
+                                class="block text-xs font-semibold uppercase tracking-wide text-zinc-500 mb-1.5">Count
+                                in Stock</label>
+                            <input id="field-count" required type="number" min="0" placeholder="0"
+                                class="w-full h-11 px-3.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 focus:outline-none focus:ring-2 focus:ring-gold-400/60 text-sm font-mono">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label
+                                class="block text-xs font-semibold uppercase tracking-wide text-zinc-500 mb-1.5">Category</label>
+                            <input id="field-category" required list="category-suggestions" type="text"
+                                placeholder="e.g. Rings, Watches, Necklaces"
+                                class="w-full h-11 px-3.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 focus:outline-none focus:ring-2 focus:ring-gold-400/60 text-sm">
+                            <datalist id="category-suggestions"></datalist>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 pt-2">
+                        <button type="submit" id="submit-btn"
+                            class="flex-1 sm:flex-none sm:px-8 h-11 rounded-lg bg-zinc-900 dark:bg-gold-400 text-white dark:text-zinc-900 font-semibold text-sm hover:shadow-glow transition-shadow">
+                            <i class="fa-solid fa-plus mr-1.5"></i><span id="submit-label">Add to Vault</span>
+                        </button>
+                        <button type="button" id="cancel-edit-btn"
+                            class="hidden h-11 px-5 rounded-lg border border-zinc-200 dark:border-zinc-700 text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="reveal flex flex-col lg:flex-row lg:items-center gap-3 mb-4">
+                <div class="relative flex-1">
+                    <i
+                        class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 text-sm"></i>
+                    <input id="search-input" type="text" placeholder="Search...  ( press / )"
+                        class="w-full h-12 pl-11 pr-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 focus:outline-none focus:ring-2 focus:ring-gold-400/60 focus:border-gold-400 transition-all text-sm placeholder:text-zinc-400">
+                </div>
+                <div
+                    class="flex items-center gap-1 h-12 px-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50">
+                    <button id="search-by-title" data-mode="title"
+                        class="search-mode-btn h-9 px-4 rounded-lg text-sm font-medium bg-zinc-900 dark:bg-gold-400 text-white dark:text-zinc-900 transition-colors">
+                        <i class="fa-solid fa-heading mr-1.5"></i>Piece
+                    </button>
+                    <button id="search-by-category" data-mode="category"
+                        class="search-mode-btn h-9 px-4 rounded-lg text-sm font-medium text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors">
+                        <i class="fa-solid fa-tags mr-1.5"></i>Category
+                    </button>
+                </div>
+                <button id="import-btn"
+                    class="flex items-center justify-center gap-2 h-12 px-5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-sm font-semibold hover:border-gold-400 transition-colors whitespace-nowrap">
+                    <i class="fa-solid fa-file-import"></i> Import Ledger
+                </button>
+                <input type="file" id="import-file" accept=".csv" class="hidden">
+                <button id="export-btn"
+                    class="flex items-center justify-center gap-2 h-12 px-5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-sm font-semibold hover:border-gold-400 transition-colors whitespace-nowrap">
+                    <i class="fa-solid fa-file-export"></i> Export Ledger
+                </button>
+                <button id="delete-all-btn"
+                    class="flex items-center justify-center gap-2 h-12 px-5 rounded-xl border border-rose-200 dark:border-rose-900 text-rose-500 text-sm font-semibold hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors whitespace-nowrap">
+                    <i class="fa-solid fa-trash-can"></i> Clear Vault (<span id="delete-all-count">0</span>)
+                </button>
+            </div>
+
+            <div id="category-chips" class="reveal flex flex-wrap gap-2 mb-6"></div>
+
+            <div
+                class="reveal rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-card overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/80 dark:bg-black/20">
+                                <th
+                                    class="px-4 py-3.5 text-left font-mono text-[11px] uppercase tracking-wider text-zinc-400">
+                                    ID</th>
+                                <th
+                                    class="px-4 py-3.5 text-left font-mono text-[11px] uppercase tracking-wider text-zinc-400">
+                                    Piece</th>
+                                <th
+                                    class="px-4 py-3.5 text-right font-mono text-[11px] uppercase tracking-wider text-zinc-400">
+                                    Price</th>
+                                <th
+                                    class="px-4 py-3.5 text-right font-mono text-[11px] uppercase tracking-wider text-zinc-400">
+                                    Taxes</th>
+                                <th
+                                    class="px-4 py-3.5 text-right font-mono text-[11px] uppercase tracking-wider text-zinc-400">
+                                    Ads</th>
+                                <th
+                                    class="px-4 py-3.5 text-right font-mono text-[11px] uppercase tracking-wider text-zinc-400">
+                                    Discount</th>
+                                <th
+                                    class="px-4 py-3.5 text-right font-mono text-[11px] uppercase tracking-wider text-zinc-400">
+                                    Total</th>
+                                <th
+                                    class="px-4 py-3.5 text-left font-mono text-[11px] uppercase tracking-wider text-zinc-400">
+                                    Stock</th>
+                                <th
+                                    class="px-4 py-3.5 text-left font-mono text-[11px] uppercase tracking-wider text-zinc-400">
+                                    Category</th>
+                                <th
+                                    class="px-4 py-3.5 text-center font-mono text-[11px] uppercase tracking-wider text-zinc-400">
+                                    Certificate</th>
+                                <th
+                                    class="px-4 py-3.5 text-center font-mono text-[11px] uppercase tracking-wider text-zinc-400">
+                                    Update</th>
+                                <th
+                                    class="px-4 py-3.5 text-center font-mono text-[11px] uppercase tracking-wider text-zinc-400">
+                                    Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody id="product-tbody"></tbody>
+                    </table>
+                </div>
+                <div id="empty-state" class="hidden flex-col items-center justify-center text-center py-20">
+                    <div
+                        class="w-20 h-20 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center mb-5">
+                        <i class="fa-solid fa-box-open text-3xl text-zinc-300 dark:text-zinc-700"></i>
+                    </div>
+                    <h3 class="font-display font-bold text-xl mb-1.5" id="empty-title">The vault is empty</h3>
+                    <p class="text-zinc-400 text-sm" id="empty-desc">Add your first piece using the vault console above.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="analytics" class="relative py-20 px-5 sm:px-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="reveal text-center max-w-2xl mx-auto mb-12">
+                <span class="text-xs font-mono uppercase tracking-widest text-gold-600 dark:text-gold-400">Chamber
+                    II</span>
+                <h2 class="font-display font-bold text-3xl sm:text-4xl mt-3 mb-4">Appraisal Insights</h2>
+                <p class="text-zinc-500 dark:text-zinc-400">Live valuation charts generated straight from your
+                    collection.</p>
+            </div>
+            <div class="grid lg:grid-cols-2 gap-6 mb-6">
+                <div
+                    class="reveal rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 p-6 shadow-card">
+                    <h3 class="font-display font-bold mb-1">Valuation by Category</h3>
+                    <p class="text-xs text-zinc-400 mb-5">Share of total collection value per category</p>
+                    <div class="relative h-72"><canvas id="category-chart"></canvas></div>
+                </div>
+                <div class="reveal rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 p-6 shadow-card"
+                    style="transition-delay:100ms">
+                    <h3 class="font-display font-bold mb-1">Most Valuable Pieces</h3>
+                    <p class="text-xs text-zinc-400 mb-5">Highest-valued entries in your vault</p>
+                    <div class="relative h-72"><canvas id="top-products-chart"></canvas></div>
+                </div>
+            </div>
+            <div
+                class="reveal rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 p-6 shadow-card">
+                <h3 class="font-display font-bold mb-1">Stock per Piece</h3>
+                <p class="text-xs text-zinc-400 mb-5">Units available for each piece</p>
+                <div class="relative h-64"><canvas id="stock-chart"></canvas></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="activity" class="relative py-20 px-5 sm:px-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="reveal text-center max-w-2xl mx-auto mb-12">
+                <span class="text-xs font-mono uppercase tracking-widest text-gold-600 dark:text-gold-400">Chamber
+                    III</span>
+                <h2 class="font-display font-bold text-3xl sm:text-4xl mt-3 mb-4">Provenance Log</h2>
+                <p class="text-zinc-500 dark:text-zinc-400">Every acquisition, update, and removal — tracked live, with
+                    one-tap restoration.</p>
+            </div>
+            <div
+                class="reveal rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-card p-6 max-w-3xl mx-auto">
+                <div class="flex items-center justify-between mb-5">
+                    <h3 class="font-display font-bold">Recent Entries</h3>
+                    <button id="clear-log-btn"
+                        class="text-xs font-semibold text-zinc-400 hover:text-rose-500 transition-colors">Clear
+                        Log</button>
+                </div>
+                <div id="activity-log" class="space-y-3 max-h-96 overflow-y-auto pr-1"></div>
+                <div id="activity-empty" class="hidden flex-col items-center justify-center text-center py-10">
+                    <i class="fa-solid fa-scroll text-3xl text-zinc-300 dark:text-zinc-700 mb-3"></i>
+                    <p class="text-sm text-zinc-400">No entries yet — the provenance log will appear here.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="notes" class="relative py-20 px-5 sm:px-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="reveal text-center max-w-2xl mx-auto mb-12">
+                <span class="text-xs font-mono uppercase tracking-widest text-gold-600 dark:text-gold-400">Chamber
+                    IV</span>
+                <h2 class="font-display font-bold text-3xl sm:text-4xl mt-3 mb-4">Curator Notes</h2>
+                <p class="text-zinc-500 dark:text-zinc-400">Private reminders — saved locally to your vault.</p>
+            </div>
+
+            <form id="note-form" class="reveal max-w-xl mx-auto flex items-center gap-2 mb-10">
+                <input id="note-input" type="text" placeholder="Write a curator's note..."
+                    class="flex-1 h-12 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 focus:outline-none focus:ring-2 focus:ring-gold-400/60 text-sm">
+                <button type="submit"
+                    class="h-12 px-6 rounded-xl bg-zinc-900 dark:bg-gold-400 text-white dark:text-zinc-900 font-semibold text-sm hover:shadow-glow transition-shadow flex-shrink-0">
+                    <i class="fa-solid fa-plus mr-1.5"></i>Add
+                </button>
+            </form>
+
+            <div id="notes-grid" class="reveal columns-1 sm:columns-2 lg:columns-3 gap-4 max-w-4xl mx-auto space-y-4">
+            </div>
+            <div id="notes-empty" class="hidden flex-col items-center justify-center text-center py-10">
+                <i class="fa-regular fa-note-sticky text-3xl text-zinc-300 dark:text-zinc-700 mb-3"></i>
+                <p class="text-sm text-zinc-400">No notes yet — add your first one above.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="relative border-t border-zinc-200 dark:border-zinc-800 py-10 px-5 sm:px-8">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2.5">
+                <img src="logo.png" alt="AURELIA" class="w-7 h-7 rounded-md">
+                <span class="font-display font-bold">AURELIA</span>
+            </div>
+            <p class="text-xs text-zinc-400 dark:text-zinc-600 font-mono">© 2026 AURELIA — Built by Tala Odeh for BinX
+                Tech Frontend Internship</p>
+        </div>
+    </footer>
+
+    <div id="qr-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-zinc-950/70 backdrop-blur-sm modal-backdrop"></div>
+        <div
+            class="modal-enter relative w-full max-w-xs rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl p-6 text-center">
+            <button
+                class="modal-close absolute top-4 right-4 w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <p class="text-[10px] uppercase tracking-[0.2em] text-gold-600 dark:text-gold-400 mb-1.5">Certificate of
+                Authenticity</p>
+            <h3 id="qr-title" class="font-display font-semibold text-lg mb-4"></h3>
+            <div id="qr-canvas-wrap" class="bg-white p-4 rounded-xl inline-block border border-gold-200"></div>
+            <button id="qr-download-btn"
+                class="mt-5 w-full h-11 rounded-lg bg-zinc-900 dark:bg-gold-400 text-white dark:text-zinc-900 font-semibold text-sm hover:shadow-glow transition-shadow">
+                <i class="fa-solid fa-download mr-1.5"></i>Download Certificate
+            </button>
+        </div>
+    </div>
+
+    <div id="confirm-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-zinc-950/70 backdrop-blur-sm modal-backdrop"></div>
+        <div
+            class="modal-enter relative w-full max-w-sm rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl p-6 text-center">
+            <div
+                class="w-14 h-14 rounded-2xl bg-rose-100 dark:bg-rose-500/10 flex items-center justify-center mx-auto mb-4">
+                <i class="fa-solid fa-trash text-rose-500 text-xl"></i>
+            </div>
+            <h3 id="confirm-title" class="font-display font-bold text-lg mb-1.5">Remove this piece?</h3>
+            <p class="text-sm text-zinc-400 mb-6" id="confirm-desc">This action can be restored from the Provenance Log.
+            </p>
+            <div class="flex items-center gap-3">
+                <button id="confirm-cancel"
+                    class="flex-1 h-11 rounded-lg border border-zinc-200 dark:border-zinc-700 text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">Cancel</button>
+                <button id="confirm-delete"
+                    class="flex-1 h-11 rounded-lg bg-rose-500 text-white text-sm font-semibold hover:bg-rose-600 transition-colors">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="fixed bottom-5 right-5 z-[70] space-y-2.5 w-[calc(100%-2.5rem)] sm:w-auto"></div>
+
+    <button id="scroll-top"
+        class="hidden fixed bottom-5 left-5 z-40 w-11 h-11 rounded-full bg-zinc-900 dark:bg-gold-400 text-white dark:text-zinc-900 items-center justify-center shadow-glow hover:scale-110 transition-transform">
+        <i class="fa-solid fa-arrow-up"></i>
+    </button>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
