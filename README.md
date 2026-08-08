@@ -59,7 +59,6 @@ AURELIA/
 ├── index.html      # Markup, layout, and Tailwind config
 ├── app.js           # All application logic
 ├── logo.png         # App logo
-├── favicon.png       # Browser tab icon
 └── README.md
 ```
 
